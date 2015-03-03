@@ -3,7 +3,7 @@
 # change project path here !!!
 # ------------------------------------------
 
-PATHPROJ = ./projects/comp
+PATHPROJ = ./projects/test_nd
 
 # ------------------------------------------
 

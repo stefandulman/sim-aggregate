@@ -10,6 +10,8 @@
   
   \todo doxygen - add text desciption to all classes
   
+  \todo unify notation   get_value, getValue
+  
   \todo split data types and mixing into two different classes under the data types
   
   \todo figure out how to store the vectors of data types in connection to the above point
@@ -93,6 +95,7 @@
   #include "sim_gossip_pushpull.h"
   #include "sim_data_exp.h"
   #include "sim_data_exp_fast.h"
+  #include "sim_networkdata.h"
 
   // algorithms customization
   #define __custom_dataexpttl_smooth
