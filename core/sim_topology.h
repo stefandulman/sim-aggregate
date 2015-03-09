@@ -33,11 +33,13 @@ class sim_topology {
     int gety(int zone) { return zone%(nsq+2) - 1; };
     
     list<int> getnbrszone(int zoneid);
-    list<int> getnbrsnode(int nodeid);
 
     int getnnbr(int nodeid, int posid);
 
   public:
+
+    // returns a list with the neighbors of this node
+    list<int> getnbrsnode(int nodeid);
 
     /** basic constructor
       \param _nnodes number of nodes

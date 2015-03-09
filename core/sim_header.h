@@ -83,6 +83,7 @@
   #include <random>
   #include <chrono>
   #include <ctime>
+  #include <float.h>
 
   using namespace std;
   
@@ -95,7 +96,8 @@
   #include "sim_gossip_pushpull.h"
   #include "sim_data_exp.h"
   #include "sim_data_exp_fast.h"
-  #include "sim_networkdata.h"
+  #include "sim_matrix.h"
+  #include "sim_networkop.h"
 
   // algorithms customization
   #define __custom_dataexpttl_smooth
