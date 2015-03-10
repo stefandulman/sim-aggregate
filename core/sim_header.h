@@ -87,6 +87,10 @@
 
   using namespace std;
   
+  // includes Eigen library
+  #include "../Eigen/Dense"
+  using Eigen::MatrixXf;
+  
   // includes - local
   #include "sim_topology.h"
   #include "sim_data.h"

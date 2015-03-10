@@ -1,10 +1,22 @@
 
 #include "../../core/sim_header.h"
-
-#include "../../Eigen/Dense"
-using Eigen::MatrixXf;
+#include "../../Eigen/Sparse"
 
 int main(void) {
+
+  MatrixXf a(3,3);
+  a << 2, -1, 0, -1, 2, -1, 0, -1, 2;
+  MatrixXf l = a.llt().matrixL();
+  cout << l << endl;
+
+/*  
+  vector<double> inv(10,1);
+  vector<double> outv = map(myfcn, inv);
+  for (int i=0; i<inv.size(); ++i) {
+    cout << outv[i] << " ";
+  }
+  cout << endl;
+*/
 
 /*
   int nnodes = 10;
@@ -21,6 +33,7 @@ int main(void) {
   cout << "done!" << endl;
 */
 
+/*  
   MatrixXf m(3,3), q, v;
 
   m(0,0) = 0; m(0,1) = 1; m(0,2) = 2; 
@@ -39,9 +52,8 @@ int main(void) {
   Eigen::SelfAdjointEigenSolver<MatrixXf> mf(m);
   cout << "The ideal eigenvector matrix is:\n" << mf.eigenvectors() << endl;
   cout << "The eigenvalues are:\n" << mf.eigenvalues() << endl;
+*/
 
-  
-
-  return 0;
+  return 0;  
 }
 
