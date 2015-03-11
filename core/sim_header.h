@@ -50,6 +50,9 @@
   
   \todo possible bug in the topology recomputation - on a network with diamter 14, values converge in 15 steps... secondly, after killing half of the network, the global sum does not jump to the proper value
 
+  \todo sim_topology - refactor the code for constructors
+  \todo sim_topology - change code to make use of MatrixXf instead of vectors and lists
+  \todo sim_topology - number of neighbors and neighbor list are inconsistent (second one returns also the node)
  */
 
 

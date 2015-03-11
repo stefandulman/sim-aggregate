@@ -3,7 +3,8 @@
 # change project path here !!!
 # ------------------------------------------
 
-PATHPROJ = ./projects/test_nd
+#PATHPROJ = ./projects/test_nd
+PATHPROJ = ./tests/eigenvectors_kempe
 
 # ------------------------------------------
 

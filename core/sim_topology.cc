@@ -93,6 +93,68 @@ sim_topology::sim_topology(int _nnodes, int _nsq) : nnodes(_nnodes), nsq(_nsq) {
     }
 }
 
+/* ugly duplication of the constructor code - do something better than this! */
+sim_topology::sim_topology(int _nnodes, int _nsq, MatrixXf _pos) : nnodes(_nnodes), nsq(_nsq) {
+    // sanity check
+    if (nsq<=0) {
+      cout << __PRETTY_FUNCTION__ << " number of squares is too small: " << nsq << endl;
+      exit(EXIT_FAILURE);
+    }
+    
+    // total number of zones is (nsq+2)*(nsq+2)
+    nzones = (nsq+2)*(nsq+2);
+    
+    //resize data structures
+    nbrs.resize(nnodes);
+    ninzone.resize(nzones);
+    px.resize(nnodes);
+    py.resize(nnodes);
+    
+    // generate random positions for the nodes
+    for (int i=0; i<nnodes; ++i) {   
+      px[i] = _pos(i,0);
+      py[i] = _pos(i,1);
+    }
+    
+    // figure out the zones in which nodes are - O(n)
+    unordered_map<int, list<int>> m; // temporary variable
+    for (int i=0; i<nnodes; ++i) {
+      int index = getzone(i);
+      ninzone[index]++;      // increment counter for the nodes
+      m[index].push_back(i); // record this node
+    }
+    
+    // transform the map(list) into a map(vector)
+    for (int i=0; i<nzones; ++i) {
+      vector<int> v(make_move_iterator(begin(m[i])), make_move_iterator(end(m[i])));
+      htn[i] = v;      
+    }
+    
+    // fill in the nbrs data structure - take each square excluding the ones on the border
+    for (int i=0; i<nsq; ++i) {
+      for (int j=0; j<nsq; ++j) {
+        
+        int sum = -1;   // the node itself does not matter
+
+        sum = sum + ninzone[getzone(i-1,j-1)];
+        sum = sum + ninzone[getzone(i-1,j  )];
+        sum = sum + ninzone[getzone(i-1,j+1)];
+        sum = sum + ninzone[getzone(i  ,j-1)];
+        sum = sum + ninzone[getzone(i  ,j  )];
+        sum = sum + ninzone[getzone(i  ,j+1)];
+        sum = sum + ninzone[getzone(i+1,j-1)];
+        sum = sum + ninzone[getzone(i+1,j  )];
+        sum = sum + ninzone[getzone(i+1,j+1)];
+        
+        // update all the nodes in this zone
+        int z = getzone(i,j);
+        for (int ind=0; ind<htn[z].size(); ++ind) {
+          nbrs[htn[z][ind]] = sum;
+        }
+      }
+    }
+}
+
 
 
 int sim_topology::getnnbr(int nodeid, int posid) {
@@ -239,6 +301,14 @@ void sim_topology::savelinks(string name) {
 }
 
 
+
+MatrixXf sim_topology::getnnbrs(void) {
+  MatrixXf res = MatrixXf::Zero(nnodes,1);
+  for (int i=0; i<nnodes; ++i) {
+    res(i) = nbrs[i];
+  }
+  return res;
+}
 
 
 

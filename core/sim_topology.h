@@ -38,6 +38,9 @@ class sim_topology {
 
   public:
 
+    // returns a matrix with the number of neighbors for each node
+    MatrixXf getnnbrs(void);
+
     // returns a list with the neighbors of this node
     list<int> getnbrsnode(int nodeid);
 
@@ -46,6 +49,13 @@ class sim_topology {
       \param _nsq number of grid steps on one direction
      */
     sim_topology(int _nnodes, int _nsq);
+    
+    /** constructor with initialization of positions
+      \param _nnodes number of nodes
+      \param _nsq number of grid steps on one direction
+      \param _pos (x,y) positions of the nodes
+     */
+    sim_topology(int _nnodes, int _nsq, MatrixXf _pos);
 
     /** function returns a random neighbor or the node itself if it is alone.
       \param nodeid node identifier 

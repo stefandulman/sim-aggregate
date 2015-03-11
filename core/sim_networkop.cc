@@ -13,13 +13,14 @@
   // 8. end loop
   // return Qi as the ith component of each eigenvector
 
-sim_matrix sim_networkop::eigenvectors_kempe(int k, int maxloops) {
+MatrixXf sim_networkop::eigenvectors_kempe(int k, int maxloops) {
   
-/*  // algorithm DecentralizedOI(k):
+  // algorithm DecentralizedOI(k):
   // 1. choose a random k-dimensional vector Qi
   MatrixXf Q;
   Q = MatrixXf::Random(_top->size(), k);
-  
+  //Q = MatrixXf::Constant(_top->size(), k, 1);
+    
   // 2. loop
   for (int i=0; i<maxloops; ++i) {
     
@@ -27,27 +28,37 @@ sim_matrix sim_networkop::eigenvectors_kempe(int k, int maxloops) {
     MatrixXf V = mt_sum(Q);
     
     // 4.   compute Ki = Vi' * Vi
-//    vector<simmatrix> Ki;
-//    Ki = map(product_rows, V, top);
     vector<MatrixXf> Ki = map_rowprod(V); 
     
     // 5.   K = pushsum(B, Ki)
-    MatrixXf B = MatrixXf::Zero(k,k);  // replace with something meaningful
-    MatrixXk K = Ki.sum();             // replace with something meaningful
+    MatrixXf temp = _top->getnnbrs();  
+    //MatrixXf B(_top->size(),1);
+    //for (int j=0; j<_top->size(); ++j) {
+    //  B(j,0) = 1 / (temp(j,0)+1);
+    //}     
+    //MatrixXf K = mt_sum(Ki, B);
+    MatrixXf K = mtv_sum(Ki);
+    
+    //cout << "matrix K" << endl;
+    //cout << K << endl;
     
     // 6.   Cholesky factorization K = R' * R
+    MatrixXf R = K.llt().matrixU();
+
+    //cout << "matrix R" << endl;
+    //cout << R << endl;
     
+    //exit(0);
+
     
     // 7.   Set Qi = Vi*R^{-1}
+    Q = V * R.inverse();
     
   // 8. end loop
   }
   
   // return Qi as the ith component of each eigenvector
-*/  
-  
-  sim_matrix res(k);
-  return res;
+  return Q;
 }
 
 
@@ -74,7 +85,17 @@ vector<MatrixXf> sim_networkop::map_rowprod(MatrixXf m) {
 }
 
 
+MatrixXf sim_networkop::mtv_sum(vector<MatrixXf> k) {
+  MatrixXf res = MatrixXf::Zero(k[0].rows(), k[0].cols());
+  for (int i=0; i<k.size(); ++i) {
+    res += k[i];
+  }
+  return res;
+}
 
+
+// todo - the nbrs returns a list including the node, while the counting of neighbors returns a list 
+// excluding the node in question - make it uniform!!!
 MatrixXf sim_networkop::mt_sum(MatrixXf m) {
   
   // assertion - network size and matrix size need to be combined somehow, now they are duplicated

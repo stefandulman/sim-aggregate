@@ -1,13 +1,28 @@
 
 #include "../../core/sim_header.h"
-#include "../../Eigen/Sparse"
+//#include "../../Eigen/Sparse"
 
 int main(void) {
 
-  MatrixXf a(3,3);
+  // generate known topology
+  int n = 7;
+  sim_topology top(7,3);
+  
+  // print connectivity matrix
+  MatrixXf temp = top.getnnbrs();
+  cout << temp << endl;
+
+  // run the eigen decomposition according to kempe
+  sim_networkop sim(&top);
+  MatrixXf res = sim.eigenvectors_kempe(3,100);  
+  cout << "Eigenvectors via Kempe's method: " << endl;
+  cout << res << endl;
+
+/*  MatrixXf a(3,3);
   a << 2, -1, 0, -1, 2, -1, 0, -1, 2;
-  MatrixXf l = a.llt().matrixL();
+  MatrixXf l = a.llt().matrixU();
   cout << l << endl;
+*/
 
 /*  
   vector<double> inv(10,1);
