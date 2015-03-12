@@ -31,7 +31,7 @@ MatrixXf sim_networkop::eigenvectors_kempe(int k, int maxloops) {
     vector<MatrixXf> Ki = map_rowprod(V); 
     
     // 5.   K = pushsum(B, Ki)
-    MatrixXf temp = _top->getnnbrs();  
+    //MatrixXf temp = _top->getnnbrs();  
     //MatrixXf B(_top->size(),1);
     //for (int j=0; j<_top->size(); ++j) {
     //  B(j,0) = 1 / (temp(j,0)+1);
@@ -63,15 +63,56 @@ MatrixXf sim_networkop::eigenvectors_kempe(int k, int maxloops) {
 
 
 
-// matrix and vector based operations
-//template <typename InType, typename OutType>
-//vector<OutType> map(OutType (*fcnptr)(InType, InType), vector<InType> inv) {
-//  vector<OutType> res;
-//  for (int i=0; i<inv.size(); ++i) {
-//    res.push_back((*fcnptr)(inv[i], inv[0]));
-//  }  
-//  return res;
-//}
+// returns the fiedler vector via bertrand's method
+MatrixXf sim_networkop::fiedlervector_bertrand(int maxloops) {
+
+  // 1. choose a random k-dimensional vector x
+  MatrixXf x = MatrixXf::Random(_top->size(), 1);
+  
+  // 2. compute alfa (as a factor of the maximum connectivity
+  double alfa = max(_top->getnnbrs());
+  
+  // loop
+  for (int i=0; i<maxloops; ++i) {
+  
+    // 3. compute the multiplication with the transformed laplacean
+    MatrixXf v = x - lap_mult(x)/alfa;
+  
+    // 4. (in parallel with 4) compute the norm of the previous result
+    MatrixXf v1 = norm(v);
+  
+    // 5. compute the average of v
+    MatrixXf v2 = avg(v);
+  
+    // 6. update x
+    x = v.cWiseProduct(v1) - v2/v1*MatrixXf::Constant(_top->size(),1,1);
+  }
+  
+  return x;
+}
+
+
+
+MatrixXf sim_networkop::lap_mult(MatrixXf x) {
+  MatrixXf res = MatrixXf::Zero(x.rows(), x.cols());
+  for (int i=0; i<x.rows(); ++i) {
+    list<int> nbrs = _top->getnbrsnode(i);
+    for (list<int>::iterator it=nbrs.begin(); it!=nbrs.end(); ++it) {
+      for (int j=0; j<x.cols(); ++j) {
+        if (i==*it) {
+          res(i,j) += nbrs.size() * x(*it,j);
+        } else {
+          res(i,j) += -x(*it,j);
+        }
+      }
+    }
+  }
+  return res;
+}
+
+double sim_networkop::norm(MatrixXf x) {
+  return x.norm();
+}
 
 
 
@@ -117,5 +158,37 @@ MatrixXf sim_networkop::mt_sum(MatrixXf m) {
   return res;
 }
 
+
+MatrixXf sim_networkop::min(MatrixXf x) {
+  MatrixXf res = MatrixXf::Constant(x.rows(), x.cols(),1);
+  for (int i=0; i<x.cols(); ++i) {
+    res.col(i) *= x.col(i).minCoeff();
+  }
+  return res;
+}
+
+MatrixXf sim_networkop::max(MatrixXf x) {
+  MatrixXf res = MatrixXf::Constant(x.rows(), x.cols(),1);
+  for (int i=0; i<x.cols(); ++i) {
+    res.col(i) *= x.col(i).maxCoeff();
+  }
+  return res;
+}
+
+MatrixXf sim_networkop::sum(MatrixXf x) {
+  MatrixXf res = MatrixXf::Constant(x.rows(), x.cols(),1);
+  for (int i=0; i<x.cols(); ++i) {
+    res.col(i) *= x.col(i).sum();
+  }
+  return res;
+}
+
+MatrixXf sim_networkop::avg(MatrixXf x) {
+  MatrixXf res = MatrixXf::Constant(x.rows(), x.cols(),1);
+  for (int i=0; i<x.cols(); ++i) {
+    res.col(i) *= x.col(i).mean();
+  }
+  return res;
+}
 
 

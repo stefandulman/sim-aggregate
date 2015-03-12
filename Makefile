@@ -4,7 +4,8 @@
 # ------------------------------------------
 
 #PATHPROJ = ./projects/test_nd
-PATHPROJ = ./tests/eigenvectors_kempe
+#PATHPROJ = ./tests/eigenvectors_kempe
+PATHPROJ = ./tests/fiedlervector_bertrand
 
 # ------------------------------------------
 

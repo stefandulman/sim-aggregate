@@ -5,7 +5,7 @@
 
 int main(void) {
 
-  cout << "test: eigenvectors_kempe" <<endl;
+  cout << "test: fiedlervector_bertrand" <<endl;
 
   // generate known topology
   int n = 7;
@@ -28,7 +28,7 @@ int main(void) {
   exp_temp << 2, 3, 1, 5, 3, 3, 3;
   for (int i=0; i<7; ++i) { 
     if (temp(i,0)!=exp_temp(i,0)) {
-      cout << "eigenvectors_kempe error: wrong connectivity matrix" << endl;
+      cout << "fiedlervector_kempe error: wrong connectivity matrix" << endl;
       cout << "expected: " << endl << exp_temp << endl;
       cout << "got:      " << endl << temp << endl;
       return 0;
@@ -39,25 +39,19 @@ int main(void) {
   // run the eigen decomposition according to kempe
   cout << "  decomposition... ";
   sim_networkop sim(&top);
-  MatrixXf res = sim.eigenvectors_kempe(3,100);  
-  MatrixXf exp_res(7,3);
-  exp_res << 0.2499,  0.4601, -0.5333, \
-             0.2691,  0.6085,  0.1317, \
-             0.0820,  0.3837,  0.7777, \
-             0.5512,  0.1211, -0.2221, \
-             0.4300, -0.2922,  0.1213, \
-             0.4300, -0.2922,  0.1213, \
-             0.4300, -0.2922,  0.1213;
+  MatrixXf res = sim.fiedlervector_bertrand(100);  
+  MatrixXf exp_res(7,1);
+  exp_res << 0.1145, 0.2968, 0.7349, -0.1360, -0.3367, -0.3367, -0.3367;
+  
+  
   // compute maximum difference
   for (int i=0; i<7; ++i) {
-    for (int j=0; j<3; ++j) {
-      double d = fabs(res(i,j) - exp_res(i,j));
-      if (d>0.1) {
-        cout << "eigenvectors_kempe error: wrong eigenvalues matrix" << endl;
-        cout << "expected:" << endl << exp_res << endl;
-        cout << "received:" << endl << res << endl;
-        return 0;
-      }
+    double d = fabs(res(i,0) - exp_res(i,0));
+    if (d>0.1) {
+      cout << "fiedlervector_bertrand error: wrong fiedler vector" << endl;
+      cout << "expected:" << endl << exp_res << endl;
+      cout << "received:" << endl << res << endl;
+      return 0;
     }
   }
   cout << "passed" << endl;

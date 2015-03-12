@@ -103,7 +103,6 @@
   #include "sim_gossip_pushpull.h"
   #include "sim_data_exp.h"
   #include "sim_data_exp_fast.h"
-  #include "sim_matrix.h"
   #include "sim_networkop.h"
 
   // algorithms customization
