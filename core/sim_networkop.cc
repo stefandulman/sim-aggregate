@@ -1,4 +1,5 @@
 
+
 #include "sim_networkop.h"
 
 // returns the first k eigenvectors via kempe's method
@@ -25,7 +26,7 @@ MatrixXf sim_networkop::eigenvectors_kempe(int k, int maxloops) {
   for (int i=0; i<maxloops; ++i) {
     
     // 3.   set Vi = sum_{j\in nbrs} aij Qj
-    MatrixXf V = mt_sum(Q);
+    MatrixXf V = mult_cm(Q);
     
     // 4.   compute Ki = Vi' * Vi
     vector<MatrixXf> Ki = map_rowprod(V); 
@@ -68,50 +69,65 @@ MatrixXf sim_networkop::fiedlervector_bertrand(int maxloops) {
 
   // 1. choose a random k-dimensional vector x
   MatrixXf x = MatrixXf::Random(_top->size(), 1);
-  
-  // 2. compute alfa (as a factor of the maximum connectivity
-  double alfa = max(_top->getnnbrs());
+    
+  // 2. compute alfa (as a factor of the maximum connectivity)
+  MatrixXf alfa = max(_top->getnnbrs());
   
   // loop
   for (int i=0; i<maxloops; ++i) {
   
     // 3. compute the multiplication with the transformed laplacean
-    MatrixXf v = x - lap_mult(x)/alfa;
+    MatrixXf v = x - elwise_div(mult_lap(x), alfa);
   
-    // 4. (in parallel with 4) compute the norm of the previous result
+    // 4. (in parallel with 5) compute the norm of the previous result
     MatrixXf v1 = norm(v);
   
     // 5. compute the average of v
     MatrixXf v2 = avg(v);
   
     // 6. update x
-    x = v.cWiseProduct(v1) - v2/v1*MatrixXf::Constant(_top->size(),1,1);
+    x = elwise_div(v - v2, v1);
   }
   
   return x;
 }
 
 
-
-MatrixXf sim_networkop::lap_mult(MatrixXf x) {
+MatrixXf sim_networkop::mult_cm(MatrixXf x) {
   MatrixXf res = MatrixXf::Zero(x.rows(), x.cols());
+  
   for (int i=0; i<x.rows(); ++i) {
     list<int> nbrs = _top->getnbrsnode(i);
+    
+    for (list<int>::iterator it=nbrs.begin(); it!=nbrs.end(); ++it) {
+      for (int j=0; j<x.cols(); ++j) {
+          res(i,j) += x(*it,j);
+      }
+    }    
+  }
+  
+  return res;
+}
+
+
+MatrixXf sim_networkop::mult_lap(MatrixXf x) {
+  MatrixXf res = MatrixXf::Zero(x.rows(), x.cols());
+  
+  for (int i=0; i<x.rows(); ++i) {
+    list<int> nbrs = _top->getnbrsnode(i);
+    
     for (list<int>::iterator it=nbrs.begin(); it!=nbrs.end(); ++it) {
       for (int j=0; j<x.cols(); ++j) {
         if (i==*it) {
-          res(i,j) += nbrs.size() * x(*it,j);
+          res(i,j) += (nbrs.size()-1) * x(*it,j);
         } else {
           res(i,j) += -x(*it,j);
         }
       }
-    }
+    }    
   }
+  
   return res;
-}
-
-double sim_networkop::norm(MatrixXf x) {
-  return x.norm();
 }
 
 
@@ -134,30 +150,15 @@ MatrixXf sim_networkop::mtv_sum(vector<MatrixXf> k) {
   return res;
 }
 
-
-// todo - the nbrs returns a list including the node, while the counting of neighbors returns a list 
-// excluding the node in question - make it uniform!!!
-MatrixXf sim_networkop::mt_sum(MatrixXf m) {
-  
-  // assertion - network size and matrix size need to be combined somehow, now they are duplicated
-  if (m.rows()!=_top->size()) {
-    cout << "sim_networkop::nbr_sum: mismatched network size and matrix size" << endl;
-    exit(0);
-  }
-  
-  MatrixXf res = MatrixXf::Zero(m.rows(), m.cols());
-  for (int i=0; i<m.rows(); ++i) {
-    list<int> nbrs = _top->getnbrsnode(i);
-    for (list<int>::iterator it=nbrs.begin(); it!=nbrs.end(); ++it) {
-      for (int j=0; j<m.cols(); ++j) {
-        res(i,j) += m(*it,j);
-      }
+MatrixXf sim_networkop::power(MatrixXf x, double p) {
+  MatrixXf res(x.rows(), x.cols());
+  for (int i=0; i<x.rows(); ++i) {
+    for (int j=0; j<x.cols(); ++j) {
+      res(i,j) = pow(x(i,j),p);
     }
   }
-  
   return res;
 }
-
 
 MatrixXf sim_networkop::min(MatrixXf x) {
   MatrixXf res = MatrixXf::Constant(x.rows(), x.cols(),1);
@@ -191,4 +192,32 @@ MatrixXf sim_networkop::avg(MatrixXf x) {
   return res;
 }
 
+MatrixXf sim_networkop::elwise_prod(MatrixXf a, MatrixXf b) {
+  MatrixXf res(a.rows(), a.cols());
+  for (int i=0; i<a.rows(); ++i) {
+    for (int j=0; j<a.cols(); ++j) {
+      res(i,j) = a(i,j) * b(i,j);
+    }
+  }
+  return res;
+}
+
+MatrixXf sim_networkop::elwise_div(MatrixXf a, MatrixXf b) {
+  MatrixXf res(a.rows(), a.cols());
+  for (int i=0; i<a.rows(); ++i) {
+    for (int j=0; j<a.cols(); ++j) {
+      res(i,j) = a(i,j) / b(i,j);
+    }
+  }
+  return res;
+}
+
+
+MatrixXf sim_networkop::norm(MatrixXf x) {
+  return power(sum(power(x, 2)), 0.5);
+}
+
+void sim_networkop::print(string s, MatrixXf x) {
+  cout << s << endl << x << endl;
+}
 
